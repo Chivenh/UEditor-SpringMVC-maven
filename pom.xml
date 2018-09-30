@@ -6,7 +6,7 @@
 
     <groupId>com.baidu</groupId>
     <artifactId>ueditor-spring-mvc</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.4.3-SNAPSHOT</version>
     <name>ueditor-spring-mvc</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
