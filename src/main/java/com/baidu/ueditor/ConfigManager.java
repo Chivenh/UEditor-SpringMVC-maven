@@ -1,8 +1,8 @@
 package com.baidu.ueditor;
 
 import com.baidu.ueditor.define.ActionMap;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import java.io.*;
 import java.util.HashMap;
@@ -165,7 +165,7 @@ public final class ConfigManager {
 		String configContent = this.readFile( this.getConfigPath() );
 		
 		try{
-			JSONObject jsonConfig = new JSONObject( configContent );
+			JSONObject jsonConfig = JSONObject.fromObject ( configContent );
 			this.jsonConfig = jsonConfig;
 		} catch ( Exception e ) {
 			this.jsonConfig = null;
@@ -180,9 +180,9 @@ public final class ConfigManager {
 	private String[] getArray ( String key ) {
 		
 		JSONArray jsonArray = this.jsonConfig.getJSONArray( key );
-		String[] result = new String[ jsonArray.length() ];
+		String[] result = new String[ jsonArray.size() ];
 		
-		for ( int i = 0, len = jsonArray.length(); i < len; i++ ) {
+		for ( int i = 0, len = jsonArray.size(); i < len; i++ ) {
 			result[i] = jsonArray.getString( i );
 		}
 		
