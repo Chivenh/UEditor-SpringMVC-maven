@@ -20,7 +20,8 @@
      * window.UEDITOR_HOME_URL = "/xxxx/xxxx/";
      */
     var URL = window.UEDITOR_HOME_URL || getUEBasePath();
-
+    //使用require等工具加载js时,直接指定URL属性值,因为通过方法获取的根路径不一定准确.
+    // var URL = "/static/lib/ueditor/";
     /**
      * 配置项主体。注意，此处所有涉及到路径的配置别遗漏URL变量。
      */
