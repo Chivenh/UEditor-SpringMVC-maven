@@ -35,6 +35,20 @@ public class ActionEnter {
 		this.configManager = ConfigManager.getInstance( this.rootPath, this.contextPath, configBase,uploadBase );
 
 	}
+
+	/**
+	 * 通过传入一个配置对象来初始化操作对象,而不是每次都去请求配置文件
+	 * @param request
+	 * @param rootPath
+	 * @param configManager
+	 */
+	public ActionEnter (HttpServletRequest request, String rootPath,ConfigManager configManager){
+		this.request = request;
+		this.rootPath = rootPath;
+		this.actionType = request.getParameter( "action" );
+		this.contextPath = request.getContextPath();
+		this.configManager=configManager;
+	}
 	
 	public String exec () {
 		
