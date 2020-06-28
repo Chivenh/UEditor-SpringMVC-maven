@@ -7,7 +7,8 @@ import com.baidu.ueditor.ExecCall;
 
 /**
  * BaseUeditorService
- *
+ * @apiNote
+ * 引用项目中，继承{@link BaseUeditorService}并调用register相关方法，注册各action对应回调，供{@link #acquireInvokeStateCall(String)}调用
  * @author LFH
  * @since 2020年06月28日 10:16
  */

@@ -13,6 +13,8 @@
 
         <java.version>1.8</java.version>
 
+        <springframework.version>5.</springframework.version>
+
     </properties>
     <description>
         基于UEditor的1.4.3-JSP版本，定制便捷应用于Spring MVC项目的Maven依赖包

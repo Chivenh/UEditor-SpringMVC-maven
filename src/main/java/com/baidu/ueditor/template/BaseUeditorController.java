@@ -3,23 +3,23 @@ package com.baidu.ueditor.template;
 import java.io.PrintWriter;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.baidu.ueditor.ExecCall;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.baidu.ueditor.ActionEnter;
 import com.baidu.ueditor.ConfigManager;
-import org.springframework.web.context.WebApplicationContext;
 
 /**
  * BaseUeditorController
  * UEditor相关配置
- *
+ * @apiNote
+ * 引用项目中，继承{@link BaseUeditorController},并实现getRootPath方法，即可使用基本功能版的UEditor
+ * 如果有定制需求，覆写action方法，使用{@link BaseUeditorService#registerExecCall(String, ExecCall)}方法来注册非config外的action回调操作，
+ * 然后在{@link #action(HttpServletRequest, String, String)}方法中，使用{@link BaseUeditorService#acquireInvokeStateCall(String)}来在调用对应回调。
  * @author LFH
  * @since  2018年10月08日 17:41
  */
@@ -30,27 +30,24 @@ public abstract class BaseUeditorController {
 	@Value("${ueditor.config.base:static/lib/ueditor}")
 	private String configBase;
 
-	@Autowired
-	private WebApplicationContext applicationContext;
-
-	private String rootPath;
-
 	/*ueditor配置*/
 	private ConfigManager ueditorConfigManager;
 
-	public String getUploadBase() {
+	protected String getUploadBase() {
 		return uploadBase;
 	}
 
-	public String getConfigBase() {
+	protected String getConfigBase() {
 		return configBase;
 	}
 
-	public String getRootPath() {
-		return rootPath;
-	}
+	/**
+	 * 获取项目根路径
+	 * @return 获取项目根路径
+	 */
+	protected abstract String getRootPath() ;
 
-	public ConfigManager getUeditorConfigManager() {
+	protected ConfigManager getUeditorConfigManager() {
 		return ueditorConfigManager;
 	}
 
@@ -66,6 +63,7 @@ public abstract class BaseUeditorController {
 		PrintWriter writer = response.getWriter();
 		String exec;
 
+		String rootPath = this.getRootPath();
 		request.setCharacterEncoding( "utf-8" );
 		/*全部改成text/html,以防止 IE把json当文件处理*/
 		response.setContentType("text/html");
@@ -88,9 +86,6 @@ public abstract class BaseUeditorController {
 
 	@PostConstruct
 	public void initUeditorConfigManager(){
-		ServletContext context = applicationContext.getServletContext();
-		Assert.notNull(context,"ServletContext 为空，不支持使用ueditor");
-		this.rootPath= context.getRealPath("/");
-		ueditorConfigManager = ConfigManager.getInstance(rootPath, "", this.getConfigBase(), this.getUploadBase());
+		ueditorConfigManager = ConfigManager.getInstance(this.getRootPath(), "", this.getConfigBase(), this.getUploadBase());
 	}
 }
