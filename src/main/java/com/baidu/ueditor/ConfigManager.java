@@ -1,12 +1,14 @@
 package com.baidu.ueditor;
 
 import com.baidu.ueditor.define.ActionMap;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import com.baidu.ueditor.jacksonextend.JsonMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * 配置管理器
@@ -15,34 +17,78 @@ import java.util.Map;
  */
 public final class ConfigManager {
 
+	private static final JsonMapper JSON_MAPPER;
+
+	static {
+		JSON_MAPPER = new JsonMapper();
+	}
+
+	/**
+	 * 配置文件名称
+	 */
+	private static final String CONFIG_FILE_NAME = "config.json";
+	/**
+	 * 默认上传文件目录
+	 */
+	private static final String UPLOAD_PATH="upload/";
+	private static final Function<ConfigManager,String> DEFAULT_CONFIG_SUPPLIER;
+	private static final Map<Integer, Function<ConfigManager,Map<String, Object>>> CONFIG_GETTERS;
+
+	/**
+	 * 运行根路径
+	 */
 	private final String rootPath;
-	private final String contextPath;
-	private static final String configFileName = "config.json";
-	private String parentPath = null;
-	private JSONObject jsonConfig = null;
-	// 涂鸦上传filename定义
+	/**
+	 * ueditor资源根路径
+	 */
+	private final String parentPath;
+	/**
+	 * 上传文件目录
+	 */
+	private final String uploadBase;
+	/**
+	 * 配置文件路径
+	 */
+	private String configPath;
+
+	/**
+	 * 配置原文
+	 */
+	private JsonNode jsonConfig = null;
+	/**
+	 * 涂鸦上传filename定义
+	 */
 	private final static String SCRAWL_FILE_NAME = "scrawl";
-	// 远程图片抓取filename定义
+	/**
+	 * 远程图片抓取filename定义
+	 */
 	private final static String REMOTE_FILE_NAME = "remote";
 
-	private final String uploadBase;
+	ConfigManager( String rootPath,final String contextPath,final String ueditorBase ,final String uploadBase, Function<ConfigManager,String> configPathSupplier)throws IOException{
+
+
+		rootPath = rootPath.replace( "\\", "/" );
+
+		this.rootPath = rootPath;
+		if ( StringUtils.isNotBlank(contextPath)) {
+			this.parentPath = this.rootPath + ueditorBase.replaceFirst( "^"+contextPath.trim(),"");
+		} else {
+			this.parentPath = this.rootPath + ueditorBase;
+		}
+
+		this.uploadBase= StringUtils.isBlank(uploadBase) ?(this.parentPath+File.separator+UPLOAD_PATH):uploadBase.trim();
+
+		this.configPath=configPathSupplier.apply(this);
+
+		this.initEnv();
+	}
+
 	/*
 	 * 通过一个给定的路径构建一个配置管理器， 该管理器要求地址路径所在目录下必须存在config.properties文件
 	 */
-	private ConfigManager ( String rootPath, String contextPath, String configBase ,String uploadBase) throws FileNotFoundException, IOException {
-		
-		rootPath = rootPath.replace( "\\", "/" );
-		
-		this.rootPath = rootPath;
-		this.contextPath = contextPath;
-		this.uploadBase=uploadBase==null||uploadBase.trim().length()<1?rootPath:uploadBase.trim();
-		if ( contextPath.length() > 0 ) {
-			this.parentPath = this.rootPath + configBase.substring( contextPath.length() );
-		} else {
-			this.parentPath = this.rootPath + configBase;
-		}
-		
-		this.initEnv();
+	ConfigManager ( String rootPath,final String contextPath,final String ueditorBase, Function<ConfigManager,String> configPathSupplier) throws IOException {
+
+		this(rootPath,contextPath,ueditorBase,null,configPathSupplier);
 		
 	}
 	
@@ -50,13 +96,13 @@ public final class ConfigManager {
 	 * 配置管理器构造工厂
 	 * @param rootPath 服务器根路径
 	 * @param contextPath 服务器所在项目路径
-	 * @param uri 配置文件根目录
+	 * @param ueditorBase ueditor资源根目录
 	 * @return 配置管理器实例或者null
 	 */
-	public static ConfigManager getInstance ( String rootPath, String contextPath, String uri ) {
+	public static ConfigManager getInstance ( String rootPath, String contextPath, String ueditorBase ) {
 		
 		try {
-			return new ConfigManager(rootPath, contextPath, uri,null);
+			return new ConfigManager(rootPath, contextPath, ueditorBase,DEFAULT_CONFIG_SUPPLIER);
 		} catch ( Exception e ) {
 			return null;
 		}
@@ -67,13 +113,13 @@ public final class ConfigManager {
 	 * 配置管理器构造工厂
 	 * @param rootPath 服务器根路径
 	 * @param contextPath 服务器所在项目路径
-	 * @param uri 配置文件根目录
+	 * @param ueditorBase ueditor资源根目录
 	 * @return 配置管理器实例或者null
 	 */
-	public static ConfigManager getInstance ( String rootPath, String contextPath, String uri,String uploadBase ) {
+	public static ConfigManager getInstance ( String rootPath, String contextPath, String ueditorBase,String uploadBase ) {
 
 		try {
-			return new ConfigManager(rootPath, contextPath, uri,uploadBase);
+			return new ConfigManager(rootPath, contextPath, ueditorBase,uploadBase,DEFAULT_CONFIG_SUPPLIER);
 		} catch ( Exception e ) {
 			return null;
 		}
@@ -85,87 +131,22 @@ public final class ConfigManager {
 		return this.jsonConfig != null;
 	}
 	
-	public JSONObject getAllConfig () {
+	public JsonNode getAllConfig () {
 		
 		return this.jsonConfig;
 		
 	}
 	
 	public Map<String, Object> getConfig ( int type ) {
-		
-		Map<String, Object> conf = new HashMap<String, Object>();
-		String savePath = null;
-		
-		switch ( type ) {
-		
-			case ActionMap.UPLOAD_FILE:
-				conf.put( "isBase64", "false" );
-				conf.put( "maxSize", this.jsonConfig.getLong( "fileMaxSize" ) );
-				conf.put( "allowFiles", this.getArray( "fileAllowFiles" ) );
-				conf.put( "fieldName", this.jsonConfig.getString( "fileFieldName" ) );
-				savePath = this.jsonConfig.getString( "filePathFormat" );
-				break;
-				
-			case ActionMap.UPLOAD_IMAGE:
-				conf.put( "isBase64", "false" );
-				conf.put( "maxSize", this.jsonConfig.getLong( "imageMaxSize" ) );
-				conf.put( "allowFiles", this.getArray( "imageAllowFiles" ) );
-				conf.put( "fieldName", this.jsonConfig.getString( "imageFieldName" ) );
-				savePath = this.jsonConfig.getString( "imagePathFormat" );
-				break;
-				
-			case ActionMap.UPLOAD_VIDEO:
-				conf.put( "maxSize", this.jsonConfig.getLong( "videoMaxSize" ) );
-				conf.put( "allowFiles", this.getArray( "videoAllowFiles" ) );
-				conf.put( "fieldName", this.jsonConfig.getString( "videoFieldName" ) );
-				savePath = this.jsonConfig.getString( "videoPathFormat" );
-				break;
-				
-			case ActionMap.UPLOAD_SCRAWL:
-				conf.put( "filename", ConfigManager.SCRAWL_FILE_NAME );
-				conf.put( "maxSize", this.jsonConfig.getLong( "scrawlMaxSize" ) );
-				conf.put( "fieldName", this.jsonConfig.getString( "scrawlFieldName" ) );
-				conf.put( "isBase64", "true" );
-				savePath = this.jsonConfig.getString( "scrawlPathFormat" );
-				break;
-				
-			case ActionMap.CATCH_IMAGE:
-				conf.put( "filename", ConfigManager.REMOTE_FILE_NAME );
-				conf.put( "filter", this.getArray( "catcherLocalDomain" ) );
-				conf.put( "maxSize", this.jsonConfig.getLong( "catcherMaxSize" ) );
-				conf.put( "allowFiles", this.getArray( "catcherAllowFiles" ) );
-				conf.put( "fieldName", this.jsonConfig.getString( "catcherFieldName" ) + "[]" );
-				savePath = this.jsonConfig.getString( "catcherPathFormat" );
-				break;
-				
-			case ActionMap.LIST_IMAGE:
-				conf.put( "allowFiles", this.getArray( "imageManagerAllowFiles" ) );
-				conf.put( "dir", this.jsonConfig.getString( "imageManagerListPath" ) );
-				conf.put( "count", this.jsonConfig.getInt( "imageManagerListSize" ) );
-				break;
-				
-			case ActionMap.LIST_FILE:
-				conf.put( "allowFiles", this.getArray( "fileManagerAllowFiles" ) );
-				conf.put( "dir", this.jsonConfig.getString( "fileManagerListPath" ) );
-				conf.put( "count", this.jsonConfig.getInt( "fileManagerListSize" ) );
-				break;
-				
-		}
-		
-		conf.put( "savePath", savePath );
-		conf.put( "uploadBase", this.uploadBase );
-		conf.put( "rootPath", this.rootPath );
-		
-		return conf;
-		
+		return CONFIG_GETTERS.get(type).apply(this);
 	}
 	
-	private void initEnv () throws FileNotFoundException, IOException {
-		
-		String configContent = this.readFile( this.getConfigPath() );
-		
+	private void initEnv () throws IOException {
+
+		String configContent = this.readFile( this.configPath );
+
 		try{
-			JSONObject jsonConfig = JSONObject.fromObject ( configContent );
+			JsonNode jsonConfig = JSON_MAPPER.readTree ( configContent );
 			this.jsonConfig = jsonConfig;
 		} catch ( Exception e ) {
 			this.jsonConfig = null;
@@ -173,20 +154,20 @@ public final class ConfigManager {
 		
 	}
 	
-	private String getConfigPath () {
-		return this.parentPath + File.separator + ConfigManager.configFileName;
-	}
-
 	private String[] getArray ( String key ) {
 		
-		JSONArray jsonArray = this.jsonConfig.getJSONArray( key );
-		String[] result = new String[ jsonArray.size() ];
-		
-		for ( int i = 0, len = jsonArray.size(); i < len; i++ ) {
-			result[i] = jsonArray.getString( i );
+		JsonNode jsonArray = this.jsonConfig.path( key );
+		if(jsonArray.isArray()){
+			String[] result = new String[ jsonArray.size() ];
+
+			for ( int i = 0, len = jsonArray.size(); i < len; i++ ) {
+				result[i] = jsonArray.path( i ).textValue();
+			}
+
+			return result;
 		}
-		
-		return result;
+
+		return null;
 		
 	}
 	
@@ -220,6 +201,107 @@ public final class ConfigManager {
 		
 		return input.replaceAll( "/\\*[\\s\\S]*?\\*/", "" );
 		
+	}
+
+	static {
+		DEFAULT_CONFIG_SUPPLIER=(m)->m.parentPath + File.separator + ConfigManager.CONFIG_FILE_NAME;
+		CONFIG_GETTERS=new HashMap<>(7);
+
+		CONFIG_GETTERS.put(ActionMap.UPLOAD_FILE,(m)->{
+			Map<String, Object> conf = new HashMap<>(10);
+			conf.put( "isBase64", "false" );
+			conf.put( "maxSize", m.jsonConfig.path( "fileMaxSize" ).longValue() );
+			conf.put( "allowFiles", m.getArray( "fileAllowFiles" ) );
+			conf.put( "fieldName", m.jsonConfig.path( "fileFieldName" ).textValue() );
+
+			conf.put( "savePath", m.jsonConfig.path( "filePathFormat" ).textValue() );
+			conf.put( "uploadBase", m.uploadBase );
+			conf.put( "rootPath", m.rootPath );
+
+			return conf;
+		});
+
+
+		CONFIG_GETTERS.put(ActionMap.UPLOAD_IMAGE,(m)->{
+			Map<String, Object> conf = new HashMap<>(10);
+			conf.put( "isBase64", "false" );
+			conf.put( "maxSize", m.jsonConfig.path( "imageMaxSize" ).longValue() );
+			conf.put( "allowFiles", m.getArray( "imageAllowFiles" ) );
+			conf.put( "fieldName", m.jsonConfig.path( "imageFieldName" ).textValue() );
+
+			conf.put( "savePath", m.jsonConfig.path( "imagePathFormat" ).textValue() );
+			conf.put( "uploadBase", m.uploadBase );
+			conf.put( "rootPath", m.rootPath );
+
+			return conf;
+		});
+
+		CONFIG_GETTERS.put(ActionMap.UPLOAD_VIDEO,(m)->{
+			Map<String, Object> conf = new HashMap<>(10);
+			conf.put( "maxSize", m.jsonConfig.path( "videoMaxSize" ).longValue() );
+			conf.put( "allowFiles", m.getArray( "videoAllowFiles" ) );
+			conf.put( "fieldName", m.jsonConfig.path( "videoFieldName" ).textValue() );
+
+			conf.put( "savePath", m.jsonConfig.path( "videoPathFormat" ).textValue() );
+			conf.put( "uploadBase", m.uploadBase );
+			conf.put( "rootPath", m.rootPath );
+
+			return conf;
+		});
+
+		CONFIG_GETTERS.put(ActionMap.UPLOAD_SCRAWL,(m)->{
+			Map<String, Object> conf = new HashMap<>(10);
+			conf.put( "filename", ConfigManager.SCRAWL_FILE_NAME );
+			conf.put( "maxSize", m.jsonConfig.path( "scrawlMaxSize" ).longValue() );
+			conf.put( "fieldName", m.jsonConfig.path( "scrawlFieldName" ).textValue() );
+			conf.put( "isBase64", "true" );
+
+			conf.put( "savePath", m.jsonConfig.path( "scrawlPathFormat" ).textValue() );
+			conf.put( "uploadBase", m.uploadBase );
+			conf.put( "rootPath", m.rootPath );
+
+			return conf;
+		});
+
+		CONFIG_GETTERS.put(ActionMap.CATCH_IMAGE,(m)->{
+			Map<String, Object> conf = new HashMap<>(10);
+			conf.put( "filename", ConfigManager.REMOTE_FILE_NAME );
+			conf.put( "filter", m.getArray( "catcherLocalDomain" ) );
+			conf.put( "maxSize", m.jsonConfig.path( "catcherMaxSize" ).longValue() );
+			conf.put( "allowFiles", m.getArray( "catcherAllowFiles" ) );
+			conf.put( "fieldName", m.jsonConfig.path( "catcherFieldName" ).textValue() + "[]" );
+
+			conf.put( "savePath", m.jsonConfig.path( "catcherPathFormat" ).textValue() );
+			conf.put( "uploadBase", m.uploadBase );
+			conf.put( "rootPath", m.rootPath );
+
+			return conf;
+		});
+
+		CONFIG_GETTERS.put(ActionMap.LIST_IMAGE,(m)->{
+			Map<String, Object> conf = new HashMap<>(10);
+			conf.put( "allowFiles", m.getArray( "imageManagerAllowFiles" ) );
+			conf.put( "dir", m.jsonConfig.path( "imageManagerListPath" ).textValue() );
+			conf.put( "count", m.jsonConfig.path( "imageManagerListSize" ).intValue() );
+
+			conf.put( "uploadBase", m.uploadBase );
+			conf.put( "rootPath", m.rootPath );
+
+			return conf;
+		});
+
+		CONFIG_GETTERS.put(ActionMap.LIST_FILE,(m)->{
+			Map<String, Object> conf = new HashMap<>(10);
+			conf.put( "allowFiles", m.getArray( "fileManagerAllowFiles" ) );
+			conf.put( "dir", m.jsonConfig.path( "fileManagerListPath" ).textValue() );
+			conf.put( "count", m.jsonConfig.path( "fileManagerListSize" ).intValue() );
+
+			conf.put( "uploadBase", m.uploadBase );
+			conf.put( "rootPath", m.rootPath );
+
+			return conf;
+		});
+
 	}
 	
 }
