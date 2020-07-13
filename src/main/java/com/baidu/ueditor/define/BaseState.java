@@ -30,7 +30,8 @@ public class BaseState implements State {
 		this.setState( state );
 		this.info = AppInfo.getStateInfo( infoCode );
 	}
-	
+
+	@Override
 	public boolean isSuccess () {
 		return this.state;
 	}
@@ -48,10 +49,11 @@ public class BaseState implements State {
 	}
 	
 	@Override
-	public String toJSONString() {
+	public String toJsonString() {
 		return this.toString();
 	}
-	
+
+	@Override
 	public String toString () {
 		
 		String key = null;
@@ -59,7 +61,7 @@ public class BaseState implements State {
 		
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append( "{\"state\": \"" + stateVal + "\"" );
+		builder.append("{\"state\": \"").append(stateVal).append("\"");
 		
 		Iterator<String> iterator = this.infoMap.keySet().iterator();
 		
@@ -67,7 +69,7 @@ public class BaseState implements State {
 			
 			key = iterator.next();
 			
-			builder.append( ",\"" + key + "\": \"" + this.infoMap.get(key) + "\"" );
+			builder.append(",\"").append(key).append("\": \"").append(this.infoMap.get(key)).append("\"");
 			
 		}
 		

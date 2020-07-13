@@ -48,7 +48,7 @@ public class NumberSerializer<N extends Number> extends JsonSerializer<N> implem
         gen.writeNumber(value.doubleValue());
     }
 
-    static {
+     static {
         MIN_JAVASCRIPT_LONG_VALUE = -MAX_JAVASCRIPT_LONG_VALUE;
         longSerializer = new NumberSerializer.LongSerializer();
         bigIntegerSerializer = new NumberSerializer.BigIntegerSerializer();

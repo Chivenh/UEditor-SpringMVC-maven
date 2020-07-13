@@ -9,15 +9,22 @@ import java.util.Map;
  *
  */
 public interface State {
-	
+
+	String DEFAULT_INFO="infoMap";
+
+	/**
+	 * 是否执行成功
+	 * @return -
+	 */
 	 boolean isSuccess();
 
 	 void putInfo(String name, String val);
 
 	 void putInfo(String name, long val);
 
-	 String toJSONString();
+	 String toJsonString();
 
+	 @SuppressWarnings("unchecked")
 	default <T> T getField(String name){
 		try {
 		Class stateClass = this.getClass();;
@@ -28,13 +35,13 @@ public interface State {
 				return (T) field.get(this);
 			}
 		}catch (NoSuchFieldException|IllegalAccessException e){
-
+			/**/
 		}
 		return (T)null;
 	}
 
 	default Object getInfo(String name){
-		Map<String,Object> infoMap=this.getField("infoMap");
+		Map<String,Object> infoMap=this.getField(DEFAULT_INFO);
 		return infoMap!=null? infoMap.get(name):null;
 	}
 }

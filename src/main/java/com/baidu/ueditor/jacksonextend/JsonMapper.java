@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
@@ -27,11 +26,11 @@ public class JsonMapper extends ObjectMapper {
     private static final long serialVersionUID = 1L;
 
     public JsonMapper() {
-        this((JsonFactory)null, (DefaultSerializerProvider)null, (DefaultDeserializationContext)null);
+        this(null, null, null);
     }
 
     public JsonMapper(JsonFactory jf) {
-        this(jf, (DefaultSerializerProvider)null, (DefaultDeserializationContext)null);
+        this(jf, null, null);
     }
 
     public JsonMapper(JsonFactory jf, DefaultSerializerProvider sp, DefaultDeserializationContext dc) {
@@ -41,7 +40,6 @@ public class JsonMapper extends ObjectMapper {
         this.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         this.configure(SerializationFeature.WRITE_DATES_WITH_ZONE_ID, false);
         this.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        this.setDateFormat(new MultipleDateFormat(MultipleDateFormat.DEFAULT_DATETIME_FORMAT));
         this.setSerializationInclusion(Include.NON_NULL);
         this.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.configure(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS, false);

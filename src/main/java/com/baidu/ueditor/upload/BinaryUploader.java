@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class BinaryUploader {
 
-	public static final State save(HttpServletRequest request,
+	public static State save(HttpServletRequest request,
 			Map<String, Object> conf) {
 		MultipartFile multipartFile = null;
 

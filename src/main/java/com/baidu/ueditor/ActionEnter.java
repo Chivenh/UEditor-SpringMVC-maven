@@ -57,7 +57,7 @@ public class ActionEnter {
 		if ( callbackName != null ) {
 
 			if ( !validCallbackName( callbackName ) ) {
-				return new BaseState( false, AppInfo.ILLEGAL ).toJSONString();
+				return new BaseState( false, AppInfo.ILLEGAL ).toJsonString();
 			}
 			
 			return callbackName+"("+this.invoke(null)+");";
@@ -74,7 +74,7 @@ public class ActionEnter {
 		if ( callbackName != null ) {
 
 			if ( !validCallbackName( callbackName ) ) {
-				return new BaseState( false, AppInfo.ILLEGAL ).toJSONString();
+				return new BaseState( false, AppInfo.ILLEGAL ).toJsonString();
 			}
 
 			return callbackName+"("+this.invoke(execCall)+");";
@@ -86,19 +86,19 @@ public class ActionEnter {
 	}
 	public String invoke(ExecCall execCall) {
 
-		if ( actionType == null || !ActionMap.mapping.containsKey( actionType ) ) {
-			return new BaseState( false, AppInfo.INVALID_ACTION ).toJSONString();
+		if ( actionType == null || !ActionMap.MAPPING.containsKey( actionType ) ) {
+			return new BaseState( false, AppInfo.INVALID_ACTION ).toJsonString();
 		}
 
 		if ( this.configManager == null || !this.configManager.valid() ) {
-			return new BaseState( false, AppInfo.CONFIG_ERROR ).toJSONString();
+			return new BaseState( false, AppInfo.CONFIG_ERROR ).toJsonString();
 		}
 
-		State state = null;
+		State state;
 
 		int actionCode = ActionMap.getType( this.actionType );
 
-		Map<String, Object> conf = null;
+		Map<String, Object> conf;
 
 		switch ( actionCode ) {
 
@@ -126,11 +126,13 @@ public class ActionEnter {
 				state = new FileManager( conf ).listFile( start );
 				break;
 
+			default:
+				return "";
 		}
 		if(execCall!=null){
 			execCall.work(state);
 		}
-		return state.toJSONString();
+		return state.toJsonString();
 
 	}
 
@@ -150,13 +152,9 @@ public class ActionEnter {
 	 * callback参数验证
 	 */
 	public boolean validCallbackName ( String name ) {
-		
-		if ( name.matches( "^[a-zA-Z_]+[\\w0-9_]*$" ) ) {
-			return true;
-		}
-		
-		return false;
-		
+
+		return name.matches( "^[a-zA-Z_]+[\\w0-9_]*$" );
+
 	}
 	
 }

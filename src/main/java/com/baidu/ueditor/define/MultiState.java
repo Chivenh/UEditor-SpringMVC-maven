@@ -50,7 +50,7 @@ public class MultiState implements State {
 	}
 
 	@Override
-	public String toJSONString() {
+	public String toJsonString() {
 		
 		String stateVal = this.isSuccess() ? AppInfo.getStateInfo( AppInfo.SUCCESS ) : this.info;
 		

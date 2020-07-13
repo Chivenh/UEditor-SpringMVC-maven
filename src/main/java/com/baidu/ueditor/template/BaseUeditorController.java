@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.baidu.ueditor.ExecCall;
+import com.baidu.ueditor.define.ActionMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -67,7 +68,7 @@ public abstract class BaseUeditorController {
 		request.setCharacterEncoding( "utf-8" );
 		/*全部改成text/html,以防止 IE把json当文件处理*/
 		response.setContentType("text/html");
-		if("config".equals(action)){
+		if(ActionMap.CONFIG_ACTION.equals(action)){
 			/*基本配置*/
 			/*response.setContentType("text/html");*/
 				exec = new ActionEnter(request, rootPath, this.getUeditorConfigManager()).exec();
