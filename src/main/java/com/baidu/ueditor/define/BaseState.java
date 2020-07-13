@@ -6,13 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class BaseState implements State {
+public class BaseState extends State {
 
-	private boolean state = false;
-	private String info = null;
-	
-	private Map<String, String> infoMap = new HashMap<String, String>();
-	
 	public BaseState () {
 		this.state = true;
 	}

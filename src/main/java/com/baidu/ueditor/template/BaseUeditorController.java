@@ -29,7 +29,7 @@ public abstract class BaseUeditorController {
 	private String uploadBase;
 
 	@Value("${ueditor.config.base:static/lib/ueditor}")
-	private String configBase;
+	private String ueditorBase;
 
 	/*ueditor配置*/
 	private ConfigManager ueditorConfigManager;
@@ -38,8 +38,17 @@ public abstract class BaseUeditorController {
 		return uploadBase;
 	}
 
-	protected String getConfigBase() {
-		return configBase;
+	protected String getUeditorBase() {
+		return ueditorBase;
+	}
+
+	/**
+	 * @deprecated {@link #getUeditorBase()}
+	 * @return -
+	 */
+	@Deprecated
+	protected String getConfigBase(){
+		return this.getUeditorBase();
 	}
 
 	/**
@@ -52,12 +61,16 @@ public abstract class BaseUeditorController {
 		return ueditorConfigManager;
 	}
 
+	protected void setUeditorConfigManager(ConfigManager ueditorConfigManager) {
+		this.ueditorConfigManager = ueditorConfigManager;
+	}
+
 	/**
 	 * UEditor 的配置服务
 	 * @param request -
 	 * @param response -
 	 * @param action -
-	 * @throws Exception
+	 * @throws Exception -
 	 */
 	@RequestMapping("ueditor.do")
 	public void handle(HttpServletRequest request, HttpServletResponse response,String action)throws  Exception{
@@ -81,12 +94,19 @@ public abstract class BaseUeditorController {
 		writer.close();
 	}
 
+	/**
+	 * 非配置操作外的其它操作
+	 * @param request -
+	 * @param rootPath -
+	 * @param action -
+	 * @return -
+	 */
 	protected String action(HttpServletRequest request,String rootPath,String action){
 		 return new ActionEnter(request, rootPath, this.getUeditorConfigManager()).exec();
 	}
 
 	@PostConstruct
 	public void initUeditorConfigManager(){
-		ueditorConfigManager = ConfigManager.getInstance(this.getRootPath(), "", this.getConfigBase(), this.getUploadBase());
+		this.setUeditorConfigManager( ConfigManager.getInstance(this.getRootPath(), "", this.getUeditorBase(), this.getUploadBase()));
 	}
 }

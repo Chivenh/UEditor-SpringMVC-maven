@@ -10,12 +10,9 @@ import java.util.*;
  * @author hancong03@baidu.com
  *
  */
-public class MultiState implements State {
+public class MultiState extends State {
 
-	private boolean state = false;
-	private String info = null;
 	private Map<String, Long> intMap = new HashMap<String, Long>();
-	private Map<String, String> infoMap = new HashMap<String, String>();
 	private List<State> stateList = new ArrayList<State>();
 	
 	public MultiState ( boolean state ) {
@@ -41,9 +38,6 @@ public class MultiState implements State {
 		stateList.add( state);
 	}
 
-	/**
-	 * 该方法调用无效果
-	 */
 	@Override
 	public void putInfo(String name, String val) {
 		this.infoMap.put(name, val);
@@ -56,16 +50,16 @@ public class MultiState implements State {
 		
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append( "{\"state\": \"" + stateVal + "\"" );
+		builder.append("{\"state\": \"").append(stateVal).append("\"");
 		
-		// 数字转换
+		/* 数字转换*/
 		Iterator<String> iterator = this.intMap.keySet().iterator();
 		
 		while ( iterator.hasNext() ) {
 			
 			stateVal = iterator.next();
 			
-			builder.append( ",\""+ stateVal +"\": " + this.intMap.get( stateVal ) );
+			builder.append(",\"").append(stateVal).append("\": ").append(this.intMap.get(stateVal));
 			
 		}
 		
@@ -75,7 +69,7 @@ public class MultiState implements State {
 			
 			stateVal = iterator.next();
 			
-			builder.append( ",\""+ stateVal +"\": \"" + this.infoMap.get( stateVal ) + "\"" );
+			builder.append(",\"").append(stateVal).append("\": \"").append(this.infoMap.get(stateVal)).append("\"");
 			
 		}
 		
@@ -84,9 +78,9 @@ public class MultiState implements State {
 
 		Iterator<State> stateIterator = this.stateList.iterator();
 		
-		while ( iterator.hasNext() ) {
+		while ( stateIterator.hasNext() ) {
 			
-			builder.append( iterator.next() + "," );
+			builder.append(iterator.next()).append(",");
 			
 		}
 		
