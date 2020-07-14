@@ -5,7 +5,7 @@ import com.baidu.ueditor.define.ConfigPathSupplier;
 import com.baidu.ueditor.jacksonextend.JsonMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
