@@ -2,9 +2,7 @@ package com.baidu.ueditor.define;
 
 import com.baidu.ueditor.Encoder;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 public class BaseState extends State {
 

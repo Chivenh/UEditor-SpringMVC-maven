@@ -6,7 +6,7 @@
 
     <groupId>com.baidu</groupId>
     <artifactId>ueditor-spring-mvc</artifactId>
-    <version>1.4.3-SNAPSHOT</version>
+    <version>0.0.1.RELEASE</version>
     <name>ueditor-spring-mvc</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,13 +29,9 @@
     <distributionManagement>
         <repository>
             <id>releases</id>
-            <name>Cargo Release Repository</name>
-            <url>http://192.168.2.133:8081/nexus/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
-            <name>Cargo Snapshot Repository</name>
-            <url>http://192.168.2.133:8081/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
     <dependencies>
