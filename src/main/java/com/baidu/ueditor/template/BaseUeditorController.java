@@ -96,18 +96,6 @@ public abstract class BaseUeditorController {
 	/**
 	 * 非配置操作外的其它操作
 	 * @param request -
-	 * @param rootPath -
-	 * @param action -
-	 * @return -
-	 * @deprecated {@link #action(HttpServletRequest, String)}
-	 */
-	protected String action(HttpServletRequest request,String rootPath,String action){
-		 return this.action(request,action);
-	}
-
-	/**
-	 * 非配置操作外的其它操作
-	 * @param request -
 	 * @param action -
 	 * @return -
 	 */
