@@ -23759,11 +23759,12 @@ UE.plugin.register('autoupload', function (){
             });
         };
 
-        if (filetype == 'image') {
+        if (filetype === 'image') {
             loadingHtml = '<img class="loadingclass" id="' + loadingId + '" src="' +
                 me.options.themePath + me.options.theme +
                 '/images/spacer.gif" title="' + (me.getLang('autoupload.loading') || '') + '" >';
             successHandler = function(data) {
+                /*#edit:添加图片上传成功事件传递*/
                 me.fireEvent('imageUploadSuccess',file,data);
                 var link = urlPrefix + data.url,
                     loader = me.document.getElementById(loadingId);
@@ -23783,6 +23784,7 @@ UE.plugin.register('autoupload', function (){
                 '/images/spacer.gif" title="' + (me.getLang('autoupload.loading') || '') + '" >' +
                 '</p>';
             successHandler = function(data) {
+                /*#edit:添加文件上传成功事件传递*/
                 me.fireEvent('fileUploadSuccess',file,data);
                 var link = urlPrefix + data.url,
                     loader = me.document.getElementById(loadingId);

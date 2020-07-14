@@ -6,13 +6,13 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.baidu.ueditor.ExecCall;
-import com.baidu.ueditor.define.ActionMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.baidu.ueditor.ActionEnter;
 import com.baidu.ueditor.ConfigManager;
+import com.baidu.ueditor.ExecCall;
+import com.baidu.ueditor.define.ActionMap;
 
 /**
  * BaseUeditorController
@@ -31,8 +31,16 @@ public abstract class BaseUeditorController {
 	@Value("${ueditor.config.base:static/lib/ueditor}")
 	private String ueditorBase;
 
-	/*ueditor配置*/
+	/**
+	 * ueditor配置对象
+	 */
 	private ConfigManager ueditorConfigManager;
+
+	/**
+	 * 获取项目根路径
+	 * @return 获取项目根路径
+	 */
+	protected abstract String getRootPath() ;
 
 	protected String getUploadBase() {
 		return uploadBase;
@@ -51,18 +59,20 @@ public abstract class BaseUeditorController {
 		return this.getUeditorBase();
 	}
 
-	/**
-	 * 获取项目根路径
-	 * @return 获取项目根路径
-	 */
-	protected abstract String getRootPath() ;
-
 	protected ConfigManager getUeditorConfigManager() {
 		return ueditorConfigManager;
 	}
 
 	protected void setUeditorConfigManager(ConfigManager ueditorConfigManager) {
 		this.ueditorConfigManager = ueditorConfigManager;
+	}
+
+	/**
+	 * 配置ueditorService
+	 * @return -
+	 */
+	protected BaseUeditorService getUeditorService(){
+		return null;
 	}
 
 	/**
@@ -100,7 +110,12 @@ public abstract class BaseUeditorController {
 	 * @return -
 	 */
 	protected String action(HttpServletRequest request,String action){
-		return new ActionEnter(request, this.getUeditorConfigManager()).exec();
+		ExecCall execCall=null;
+		if(this.getUeditorService()!=null){
+			/*如果定义了ueditorService,则自动添加回调*/
+			execCall=this.getUeditorService().acquireInvokeStateCall(action);
+		}
+		return new ActionEnter(request, this.getUeditorConfigManager()).exec(execCall);
 	}
 
 	@PostConstruct

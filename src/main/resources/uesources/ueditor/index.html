@@ -170,6 +170,38 @@
         UE.getEditor('editor').execCommand( "clearlocaldata" );
         alert("已清空草稿箱")
     }
+
+    /**
+     * 将ueditor改造为简单的粘贴上传图片工具
+     * zeroclipboard 是必要加载组件，如果在cmd环境下注意手动加载
+     */
+    function scrawlExample() {
+
+        let ueProvider = UE.getEditor("ue-container",{
+            toolbars: [],
+            imagePopup:false,
+            whitList:{
+                img:    ['src', 'alt', 'title', 'width', 'height', 'id', '_src', 'loadingclass', 'class', 'data-latex'],
+            },
+            enableContextMenu:false,
+            enableAutoSave: false,
+            autoClearinitialContent:false,
+            maxUndoCount:1,
+            zIndex:1
+        });
+
+        ueProvider.addListener('imageUploadSuccess',function (e,file,data) {
+            if(data.state==='SUCCESS') {
+                document.querySelector("#ue-image-view").src = `/ueditorConfig/showImg.do?url=${data.url}`;
+            }
+        });
+
+        ueProvider.addListener('contentChange',function () {
+            /*清空编辑器*/
+            ueProvider.execCommand('cleardoc');
+        });
+
+    }
 </script>
 </body>
 </html>
