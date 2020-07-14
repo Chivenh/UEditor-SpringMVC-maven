@@ -4,6 +4,7 @@ import com.baidu.ueditor.define.ActionMap;
 import com.baidu.ueditor.define.ConfigPathSupplier;
 import com.baidu.ueditor.jacksonextend.JsonMapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -15,7 +16,8 @@ import java.util.function.Function;
 /**
  * 配置管理器
  * 
- * @author hancong03@baidu.com
+ * @author lfh
+ * @since 2020-07-14 8:51
  *
  */
 public final class ConfigManager {
@@ -34,6 +36,14 @@ public final class ConfigManager {
 	 * 默认上传文件目录
 	 */
 	private static final String UPLOAD_PATH = "upload/";
+	/**
+	 * 涂鸦上传filename定义
+	 */
+	private final static String SCRAWL_FILE_NAME = "scrawl";
+	/**
+	 * 远程图片抓取filename定义
+	 */
+	private final static String REMOTE_FILE_NAME = "remote";
 	/**
 	 * 默认配置数据获取方法
 	 */
@@ -64,14 +74,6 @@ public final class ConfigManager {
 	 * 配置原文
 	 */
 	private JsonNode jsonConfig = null;
-	/**
-	 * 涂鸦上传filename定义
-	 */
-	private final static String SCRAWL_FILE_NAME = "scrawl";
-	/**
-	 * 远程图片抓取filename定义
-	 */
-	private final static String REMOTE_FILE_NAME = "remote";
 
 	private ConfigManager(String rootPath, final String contextPath, final String ueditorBase, final String uploadBase,
 			ConfigPathSupplier configPathSupplier) throws IOException {
@@ -205,10 +207,9 @@ public final class ConfigManager {
 		String configContent = this.readFile(this.configPath);
 
 		try {
-			JsonNode jsonConfig = JSON_MAPPER.readTree(configContent);
-			this.jsonConfig = jsonConfig;
+			this.jsonConfig = JSON_MAPPER.readTree(configContent);
 		} catch (Exception e) {
-			this.jsonConfig = null;
+			this.jsonConfig = NullNode.instance;
 		}
 
 	}

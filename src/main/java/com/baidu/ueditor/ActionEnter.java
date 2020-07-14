@@ -13,40 +13,37 @@ import java.util.Map;
 
 public class ActionEnter {
 	
-	private HttpServletRequest request = null;
+	private HttpServletRequest request;
+
+	private String rootPath;
+
+	private String actionType;
 	
-	private String rootPath = null;
-	private String contextPath = null;
-
-	private String actionType = null;
-	
-	private ConfigManager configManager = null;
-
-	public ActionEnter ( HttpServletRequest request, String rootPath ,String configBase) {
-		this(request,rootPath,configBase,null);
-	}
-
-	public ActionEnter ( HttpServletRequest request, String rootPath,String configBase ,String uploadBase) {
-
-		this.request = request;
-		this.rootPath = rootPath;
-		this.actionType = request.getParameter( "action" );
-		this.contextPath = request.getContextPath();
-		this.configManager = ConfigManager.getInstance( this.rootPath, this.contextPath, configBase,uploadBase );
-
-	}
+	private ConfigManager configManager;
 
 	/**
 	 * 通过传入一个配置对象来初始化操作对象,而不是每次都去请求配置文件
-	 * @param request
-	 * @param rootPath
-	 * @param configManager
+	 * @deprecated {@link #ActionEnter(HttpServletRequest, ConfigManager)}
+	 * @param request -
+	 * @param rootPath 忽略此参数
+	 * @param configManager {@link ConfigManager}
 	 */
+	@Deprecated
 	public ActionEnter (HttpServletRequest request, String rootPath,ConfigManager configManager){
 		this.request = request;
 		this.rootPath = rootPath;
 		this.actionType = request.getParameter( "action" );
-		this.contextPath = request.getContextPath();
+		this.configManager=configManager;
+	}
+
+	/**
+	 * 通过传入一个配置对象来初始化操作对象,而不是每次都去请求配置文件
+	 * @param request -
+	 * @param configManager {@link ConfigManager}
+	 */
+	public ActionEnter (HttpServletRequest request, ConfigManager configManager){
+		this.request = request;
+		this.actionType = request.getParameter( "action" );
 		this.configManager=configManager;
 	}
 	

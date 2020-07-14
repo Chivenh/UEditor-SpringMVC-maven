@@ -20,7 +20,7 @@ import com.baidu.ueditor.ConfigManager;
  * @apiNote
  * 引用项目中，继承{@link BaseUeditorController},并实现getRootPath方法，即可使用基本功能版的UEditor
  * 如果有定制需求，覆写action方法，使用{@link BaseUeditorService#registerExecCall(String, ExecCall)}方法来注册非config外的action回调操作，
- * 然后在{@link #action(HttpServletRequest, String, String)}方法中，使用{@link BaseUeditorService#acquireInvokeStateCall(String)}来在调用对应回调。
+ * 然后在{@link #action(HttpServletRequest, String)}方法中，使用{@link BaseUeditorService#acquireInvokeStateCall(String)}来在调用对应回调。
  * @author LFH
  * @since  2018年10月08日 17:41
  */
@@ -77,17 +77,16 @@ public abstract class BaseUeditorController {
 		PrintWriter writer = response.getWriter();
 		String exec;
 
-		String rootPath = this.getRootPath();
 		request.setCharacterEncoding( "utf-8" );
 		/*全部改成text/html,以防止 IE把json当文件处理*/
 		response.setContentType("text/html");
 		if(ActionMap.CONFIG_ACTION.equals(action)){
 			/*基本配置*/
 			/*response.setContentType("text/html");*/
-				exec = new ActionEnter(request, rootPath, this.getUeditorConfigManager()).exec();
+			exec = new ActionEnter(request, this.getUeditorConfigManager()).exec();
 		}else{
 			/*response.setContentType("application/json");*/
-			exec=this.action(request,rootPath,action);
+			exec=this.action(request,action);
 		}
 		writer.write(exec);
 		writer.flush();
@@ -100,9 +99,20 @@ public abstract class BaseUeditorController {
 	 * @param rootPath -
 	 * @param action -
 	 * @return -
+	 * @deprecated {@link #action(HttpServletRequest, String)}
 	 */
 	protected String action(HttpServletRequest request,String rootPath,String action){
-		 return new ActionEnter(request, rootPath, this.getUeditorConfigManager()).exec();
+		 return this.action(request,action);
+	}
+
+	/**
+	 * 非配置操作外的其它操作
+	 * @param request -
+	 * @param action -
+	 * @return -
+	 */
+	protected String action(HttpServletRequest request,String action){
+		return new ActionEnter(request, this.getUeditorConfigManager()).exec();
 	}
 
 	@PostConstruct
